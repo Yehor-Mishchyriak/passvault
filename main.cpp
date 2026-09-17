@@ -19,6 +19,8 @@ enum Command{
     DeleteEntry,
     Quit,
     Help,
+    DisplayEntry,
+    ListEntries,
     Invalid,
     None
 };
@@ -30,6 +32,8 @@ std::unordered_map<std::string, Command> commands = {
     {"/edit_entry", EditEntry},
     {"/delete_entry", DeleteEntry},
     {"/quit", Quit},
+    {"/display_entry", DisplayEntry},
+    {"/list_entries", ListEntries},
     {"/help", Help}
 };
 
@@ -214,7 +218,19 @@ void list_entries(std::string& raw_usr_input, Vault& secrets){
     }
 }
 
-void help(){}
+void help(){
+    send_message("Available commands (case-sensitive):");
+    send_message("/add_entry - Add a secret by entering its NAME, USER_NAME, and SECRET when prompted.");
+    send_message("/edit_entry - Intended to update an existing entry's USER_NAME and SECRET; currently prints a placeholder message.");
+    send_message("/delete_entry - Intended to delete an entry after confirmation; currently prints a placeholder message.");
+    send_message("/quit - Exit passvault. All entries are lost when the program exits.");
+    send_message("/help - Intended to show this help; currently prints a placeholder message.");
+    send_message("Enter each command on its own line, then answer the prompts. Field values can contain spaces.");
+    send_message("Entry names must be unique. Some names are reserved and can't be used, namely: ");
+    for (const auto& name : reserved_words) {
+        send_message(name);
+    }
+}
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 
@@ -231,21 +247,29 @@ void start_mainloop(MainLoopState& MLS, Vault& secrets){
             add_entry(raw_input_copy, secrets);
             break;
         case EditEntry:
-            std::cout << "Requested <EditEntry>\n";
+            edit_entry(raw_input_copy, secrets);
             break;
         case DeleteEntry:
-            std::cout << "Requested <DeleteEntry>\n";
+            delete_entry(raw_input_copy, secrets);
             break;
         case Quit:
-            std::cout << "Requested <Quit>\n";
             quit(MLS);
             break;
         case Help:
-            std::cout << "Requested<Help>\n";
+            help();
             break;
+        case DisplayEntry:
+            display_entry(raw_input_copy, secrets);
+            break;
+        case ListEntries:
+            list_entries(raw_input_copy, secrets);
+            break;
+        case None:
+            send_message("Ready when you are...");
         default: // Invalid type
             send_message("Unknown command; Please input \"/help\" to see available commands");
         }
+        usr_command = None;
     }
 }
 
