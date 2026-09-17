@@ -176,9 +176,43 @@ void delete_entry(std::string& raw_usr_input, Vault& secrets){
     }
 }
 
-void display_entry(){}
+void display_entry(std::string& raw_usr_input, Vault& secrets){
+    send_message("Enter the NAME of the secret: ");
+    request_input(); read_raw_input(raw_usr_input); auto name = raw_usr_input;
+    Entry retrieved_entry = get_value_from(secrets, name, Entry{NULL_STR});
+    if (retrieved_entry.name == NULL_STR){
+        send_message(std::format("There is no entry with name {}.", name));
+        return;
+    }
+    send_message(
+        std::format("NAME: {}\nUSER_NAME: {}\nSECRET: {}",
+        retrieved_entry.name,
+        retrieved_entry.username,
+        retrieved_entry.secret)
+    );
+}
 
-void list_entries(){}
+void list_entries(std::string& raw_usr_input, Vault& secrets){
+    send_message("How many entries to list?");
+    int n;
+    while (n<=0){
+        request_input(); read_raw_input(raw_usr_input);
+        try{
+            n = std::stoi(raw_usr_input);
+        } catch (const std::invalid_argument&) {
+            // No valid number.
+        } catch (const std::out_of_range&) {
+            // Number too large or too small.
+        }
+        send_message("Enter a valid positive integer.");
+    }
+    int c = 1;
+    for (const auto& [name, entry] : secrets) {
+        if (c >= n){return;}
+        std::cout << name << ": " << entry.username << '\n';
+        c++;
+    }
+}
 
 void help(){}
 
