@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstddef>
 #include <format>
 #include <algorithm>
 #include <unordered_map>
@@ -94,11 +95,19 @@ void quit(MainLoopState& MLS){
     MLS = ABORTED;
 }
 
-void add_entry(std::string& raw_usr_input, Vault& secrets){
+void add_entry(MainLoopState& MLS, std::string& raw_usr_input, Vault& secrets){
     Entry new_entry;
+
     /* -=-=-=-    NAME   -=-=-=- */
     send_message("Enter the NAME of the secret: ");
-    request_input(); read_raw_input(raw_usr_input); auto name = raw_usr_input;
+    request_input(); bool success = read_raw_input(raw_usr_input); if (!success){quit(MLS); return;}
+    auto name = raw_usr_input;
+
+    if (name.empty()){
+        send_message("Enter a non-empty NAME.");
+        return;
+    }
+
     if (is_reserved(name)){
         send_message(std::format("\"{}\" is a reserved word. Please enter a different NAME.", name));
         return;
@@ -108,9 +117,12 @@ void add_entry(std::string& raw_usr_input, Vault& secrets){
         return;
     }
     new_entry.name = raw_usr_input;
+
     /* -=-=-=- USER_NAME -=-=-=- */
     send_message("Enter the associated USER_NAME: ");
-    request_input(); read_raw_input(raw_usr_input); auto username = raw_usr_input;
+    request_input(); success = read_raw_input(raw_usr_input); if (!success){quit(MLS); return;}
+    auto username = raw_usr_input;
+
     if (is_reserved(username)){
         send_message(std::format("\"{}\" is a reserved word. Please enter a different USER_NAME.", username));
         return;
@@ -118,7 +130,14 @@ void add_entry(std::string& raw_usr_input, Vault& secrets){
     new_entry.username = username;
     /* -=-=-=-   SECRET  -=-=-=- */
     send_message("Enter the associated SECRET: ");
-    request_input(); read_raw_input(raw_usr_input);  auto secret = raw_usr_input;
+    request_input(); success = read_raw_input(raw_usr_input); if (!success){quit(MLS); return;}
+    auto secret = raw_usr_input;
+
+    if (secret.empty()){
+        send_message("Enter a non-empty SECRET.");
+        return;
+    }
+
     if (is_reserved(secret)){
         send_message(std::format("\"{}\" is a reserved word. Please enter a better secret to store.", secret));
         return;
@@ -127,10 +146,11 @@ void add_entry(std::string& raw_usr_input, Vault& secrets){
     secrets[new_entry.name] = new_entry;
 }
 
-void edit_entry(std::string& raw_usr_input, Vault& secrets){
+void edit_entry(MainLoopState& MLS, std::string& raw_usr_input, Vault& secrets){
     /* -=-=-=-    NAME   -=-=-=- */
     send_message("Enter the NAME of the secret: ");
-    request_input(); read_raw_input(raw_usr_input); auto name = raw_usr_input;
+    request_input(); bool success = read_raw_input(raw_usr_input); if (!success){quit(MLS); return;}
+    auto name = raw_usr_input;
     if (is_reserved(name)){
         send_message(std::format("\"{}\" is a reserved word. Please enter a different NAME.", name));
         return;
@@ -142,7 +162,8 @@ void edit_entry(std::string& raw_usr_input, Vault& secrets){
     }
     /* -=-=-=- USER_NAME -=-=-=- */
     send_message("Enter the new associated USER_NAME: ");
-    request_input(); read_raw_input(raw_usr_input); auto username = raw_usr_input;
+    request_input(); success = read_raw_input(raw_usr_input); if (!success){quit(MLS); return;}
+    auto username = raw_usr_input;
     if (is_reserved(username)){
         send_message(std::format("\"{}\" is a reserved word. Please enter a different USER_NAME.", username));
         return;
@@ -150,7 +171,12 @@ void edit_entry(std::string& raw_usr_input, Vault& secrets){
     retrieved_entry.username = username;
     /* -=-=-=-   SECRET  -=-=-=- */
     send_message("Enter the new associated SECRET: ");
-    request_input(); read_raw_input(raw_usr_input);  auto secret = raw_usr_input;
+    request_input(); success = read_raw_input(raw_usr_input); if (!success){quit(MLS); return;}
+    auto secret = raw_usr_input;
+    if (secret.empty()){
+        send_message("Enter a non-empty SECRET.");
+        return;
+    }
     if (is_reserved(secret)){
         send_message(std::format("\"{}\" is a reserved word. Please enter a better secret to store.", secret));
         return;
@@ -159,9 +185,10 @@ void edit_entry(std::string& raw_usr_input, Vault& secrets){
     secrets[retrieved_entry.name] = retrieved_entry;
 };
 
-void delete_entry(std::string& raw_usr_input, Vault& secrets){
+void delete_entry(MainLoopState& MLS, std::string& raw_usr_input, Vault& secrets){
     send_message("Enter the NAME of the secret: ");
-    request_input(); read_raw_input(raw_usr_input); auto name = raw_usr_input;
+    request_input(); bool success = read_raw_input(raw_usr_input); if (!success){quit(MLS); return;}
+    auto name = raw_usr_input;
     Entry retrieved_entry = get_value_from(secrets, name, Entry{NULL_STR});
     if (retrieved_entry.name == NULL_STR){
         send_message(std::format("There is no entry with name {}.", name));
@@ -170,7 +197,8 @@ void delete_entry(std::string& raw_usr_input, Vault& secrets){
     std::string confirmation = std::format("Delete {} secret", name);
     while (true){
         send_message(std::format("Type {} to confirm or \"STOP\" to cancel the deletion.", confirmation));
-        request_input(); read_raw_input(raw_usr_input); auto usr_confirmation = raw_usr_input;
+        request_input(); success = read_raw_input(raw_usr_input); if (!success){quit(MLS); return;}
+        auto usr_confirmation = raw_usr_input;
         if (usr_confirmation == confirmation){
             secrets.erase(name);
             return;
@@ -180,9 +208,10 @@ void delete_entry(std::string& raw_usr_input, Vault& secrets){
     }
 }
 
-void display_entry(std::string& raw_usr_input, Vault& secrets){
+void display_entry(MainLoopState& MLS, std::string& raw_usr_input, Vault& secrets){
     send_message("Enter the NAME of the secret: ");
-    request_input(); read_raw_input(raw_usr_input); auto name = raw_usr_input;
+    request_input(); bool success = read_raw_input(raw_usr_input); if (!success){quit(MLS); return;}
+    auto name = raw_usr_input;
     Entry retrieved_entry = get_value_from(secrets, name, Entry{NULL_STR});
     if (retrieved_entry.name == NULL_STR){
         send_message(std::format("There is no entry with name {}.", name));
@@ -196,21 +225,26 @@ void display_entry(std::string& raw_usr_input, Vault& secrets){
     );
 }
 
-void list_entries(std::string& raw_usr_input, Vault& secrets){
+void list_entries(MainLoopState& MLS, std::string& raw_usr_input, Vault& secrets){
+    if (secrets.empty()){send_message("Vault is empty"); return;}
     send_message("How many entries to list?");
-    int n;
-    while (n<=0){
-        request_input(); read_raw_input(raw_usr_input);
+    int n = 0;
+    do {
+        request_input(); bool success = read_raw_input(raw_usr_input); if (!success){quit(MLS); return;}
         try{
-            n = std::stoi(raw_usr_input);
+            std::size_t consumed;
+            n = std::stoi(raw_usr_input, &consumed);
+            if (consumed != raw_usr_input.size()) {
+                n = 0;
+            }
         } catch (const std::invalid_argument&) {
-            // No valid number.
+            n = 0;
         } catch (const std::out_of_range&) {
-            // Number too large or too small.
+            n = 0;
         }
-        send_message("Enter a valid positive integer.");
-    }
-    int c = 1;
+        if (n<=0){send_message("Enter a valid positive integer.");}
+    } while (n<=0);
+    int c = 0;
     for (const auto& [name, entry] : secrets) {
         if (c >= n){return;}
         std::cout << name << ": " << entry.username << '\n';
@@ -221,12 +255,14 @@ void list_entries(std::string& raw_usr_input, Vault& secrets){
 void help(){
     send_message("Available commands (case-sensitive):");
     send_message("/add_entry - Add a secret by entering its NAME, USER_NAME, and SECRET when prompted.");
-    send_message("/edit_entry - Intended to update an existing entry's USER_NAME and SECRET; currently prints a placeholder message.");
-    send_message("/delete_entry - Intended to delete an entry after confirmation; currently prints a placeholder message.");
+    send_message("/edit_entry - Find an entry by NAME and replace its USER_NAME and SECRET. Its NAME stays unchanged.");
+    send_message("/delete_entry - Find an entry by NAME, then type the requested confirmation to delete it or STOP to cancel.");
+    send_message("/display_entry - Find an entry by NAME and display its NAME, USER_NAME, and SECRET in the terminal.");
+    send_message("/list_entries - Enter a positive count to list up to that many names and usernames, without secrets. Order is unspecified.");
     send_message("/quit - Exit passvault. All entries are lost when the program exits.");
-    send_message("/help - Intended to show this help; currently prints a placeholder message.");
+    send_message("/help - Show this help.");
     send_message("Enter each command on its own line, then answer the prompts. Field values can contain spaces.");
-    send_message("Entry names must be unique. Some names are reserved and can't be used, namely: ");
+    send_message("Entry names must be unique. The following values are reserved and cannot be used as NAME, USER_NAME, or SECRET:");
     for (const auto& name : reserved_words) {
         send_message(name);
     }
@@ -239,18 +275,18 @@ void start_mainloop(MainLoopState& MLS, Vault& secrets){
     send_message("Ready when you are...");
     std::string raw_usr_input;
     while (MLS == RUNNING){
-        request_input(); read_raw_input(raw_usr_input);
+        request_input(); bool success = read_raw_input(raw_usr_input); if (!success){quit(MLS); return;}
         auto raw_input_copy = raw_usr_input;
         Command usr_command = get_value_from(commands, raw_input_copy, Invalid);
         switch (usr_command){
         case AddEntry:
-            add_entry(raw_input_copy, secrets);
+            add_entry(MLS, raw_input_copy, secrets);
             break;
         case EditEntry:
-            edit_entry(raw_input_copy, secrets);
+            edit_entry(MLS, raw_input_copy, secrets);
             break;
         case DeleteEntry:
-            delete_entry(raw_input_copy, secrets);
+            delete_entry(MLS, raw_input_copy, secrets);
             break;
         case Quit:
             quit(MLS);
@@ -259,13 +295,14 @@ void start_mainloop(MainLoopState& MLS, Vault& secrets){
             help();
             break;
         case DisplayEntry:
-            display_entry(raw_input_copy, secrets);
+            display_entry(MLS, raw_input_copy, secrets);
             break;
         case ListEntries:
-            list_entries(raw_input_copy, secrets);
+            list_entries(MLS, raw_input_copy, secrets);
             break;
         case None:
             send_message("Ready when you are...");
+            break;
         default: // Invalid type
             send_message("Unknown command; Please input \"/help\" to see available commands");
         }
