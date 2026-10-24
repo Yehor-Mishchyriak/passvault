@@ -7,8 +7,5 @@
 
 
 int main() {
-    passvault::Vault V;
-    V.add(passvault::Secret{.name="wesportal", .value="12345"});
-    std::cout << V.get("wesportal") << "\n";
     return 0;
 }

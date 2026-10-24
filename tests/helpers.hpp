@@ -4,16 +4,17 @@
 #include <string>
 #include <exception>
 #include <iostream>
-#include <unordered_map>
 #include <functional> // std::invoke
 #include <utility>    // std::forward
 // proj includes
 #include "../src/core/vault.hpp"
 
+namespace helpers {
+
 /*----------------------------------------------------*/
 //                    VAULT HELPERS
 /*----------------------------------------------------*/
-namespace helpers::vaultHelpers {
+namespace vaultHelpers {
 
 struct VaultFixtureOptions{
     bool empty = true;
@@ -25,15 +26,12 @@ vaultFixture(
     const VaultFixtureOptions& options
 );
 
-}
+} // namespace vaultHelpers
 /*----------------------------------------------------*/
 
 /*----------------------------------------------------*/
 //                      GENERICS
 /*----------------------------------------------------*/
-
-namespace helpers{
-
 template <typename Actual, typename Expected>
 bool
 testEquals(
@@ -81,5 +79,5 @@ bool testThrows(
     return false;
 }
 
-}
+} // namespace helpers
 /*----------------------------------------------------*/

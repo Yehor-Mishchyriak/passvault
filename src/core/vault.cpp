@@ -53,3 +53,12 @@ passvault::Vault::get(const std::string& name) const{
     return (this->secrets_.at(name)).value;
 }
 /*----------------------------------------------------*/
+
+/*----------------------------------------------------*/
+//                  READ-ONLY GETTERS
+/*----------------------------------------------------*/
+const std::unordered_map<std::string, passvault::Secret>&
+passvault::Vault::secrets() const{
+    return this->secrets_;
+}
+/*----------------------------------------------------*/
