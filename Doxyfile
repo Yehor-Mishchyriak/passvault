@@ -1,0 +1,13 @@
+# Run from the project root: doxygen Doxyfile
+PROJECT_NAME           = "Passvault"
+INPUT                  = src tests
+RECURSIVE              = YES
+FILE_PATTERNS          = *.hpp *.cpp
+OUTPUT_DIRECTORY       = build/docs
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+HAVE_DOT               = NO
+QUIET                  = YES
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
