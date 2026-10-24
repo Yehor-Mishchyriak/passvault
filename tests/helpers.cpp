@@ -1,3 +1,7 @@
+/**
+ * @file helpers.cpp
+ * @brief Construction of test vaults from fixture options.
+ */
 // std library includes
 #include <string>
 #include <unordered_map>

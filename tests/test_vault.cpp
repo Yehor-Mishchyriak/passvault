@@ -1,4 +1,9 @@
+/**
+ * @file test_vault.cpp
+ * @brief Fixture definitions and tests of vault insertion, lookup, membership, and removal.
+ */
 // std library includes
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -19,8 +24,10 @@ using passvault::Secret;
 /*----------------------------------------------------*/
 //                      FIXTURES
 /*----------------------------------------------------*/
+/// @brief Shared read-only fixture descriptions copied by individual tests.
 namespace fixtures {
 
+/// @brief Empty and populated inputs covering varied names, descriptions, and values.
 const std::vector<VaultFixtureOptions> vaultFixtures{
     VaultFixtureOptions{},
     VaultFixtureOptions{
@@ -105,8 +112,13 @@ const std::vector<VaultFixtureOptions> vaultFixtures{
 /*----------------------------------------------------*/
 namespace vaultTests{
 
-void
+/**
+ * @brief Checks insertion of a fresh secret into each fixture against the expected map.
+ * @return True if all insertion checks pass.
+ */
+bool
 testAdd(){
+    std::vector<bool> results;
     for (std::size_t i = 0; i < fixtures::vaultFixtures.size(); ++i) {
         auto actualInitilizerKwargs = fixtures::vaultFixtures[i];
         auto expectedInitilizerKwargs = fixtures::vaultFixtures[i];
@@ -117,44 +129,60 @@ testAdd(){
         
         actual.add(Secret{.name="FOO", .value="BAR"});
 
-        testEquals(
+        results.push_back(testEquals(
             std::format("Test Vault.add {} ", i+1),
             actual.secrets(),
             expected.secrets(),
             "SUCCESS",
-            "FAIL"
-        );
+            "FAIL",
+            false
+        ));
     }
+    return std::ranges::all_of(results, [](bool passed) { return passed; });
 }
 
-void
+/**
+ * @brief Checks membership of existing keys and absence of a missing key in each fixture.
+ * @return True if all membership checks pass.
+ */
+bool
 testExists(){
+    std::vector<bool> results;
     for (std::size_t i = 0; i < fixtures::vaultFixtures.size(); ++i) {
         auto actualInitilizerKwargs = fixtures::vaultFixtures[i];
         auto actual = vaultFixture(actualInitilizerKwargs);
 
         for (const auto& [name, secret] : actualInitilizerKwargs.contents) {
-            testEquals(
+            results.push_back(testEquals(
                 std::format("Test Vault.exists {}: {}", i+1, name),
                 actual.exists(name),
                 true,
                 "SUCCESS",
-                "FAIL"
-            );
+                "FAIL",
+                false
+            ));
         }
 
-        testEquals(
+        results.push_back(testEquals(
             std::format("Test Vault.exists {}: missing name", i+1),
             actual.exists("FOO"),
             false,
             "SUCCESS",
-            "FAIL"
-        );
+            "FAIL",
+            false
+        ));
     }
+    return std::ranges::all_of(results, [](bool passed) { return passed; });
 }
 
-void
+/**
+ * @brief Checks removal against an expected map and rejection of a missing key.
+ * @details Also checks that a rejected removal leaves the vault unchanged.
+ * @return True if all removal and exception checks pass.
+ */
+bool
 testRemove(){
+    std::vector<bool> results;
     for (std::size_t i = 0; i < fixtures::vaultFixtures.size(); ++i) {
         for (const auto& [name, secret] : fixtures::vaultFixtures[i].contents) {
             auto actualInitilizerKwargs = fixtures::vaultFixtures[i];
@@ -165,13 +193,14 @@ testRemove(){
 
             actual.remove(name);
 
-            testEquals(
+            results.push_back(testEquals(
                 std::format("Test Vault.remove {}: {}", i+1, name),
                 actual.secrets(),
                 expected.secrets(),
                 "SUCCESS",
-                "FAIL"
-            );
+                "FAIL",
+                false
+            ));
         }
 
         auto actualInitilizerKwargs = fixtures::vaultFixtures[i];
@@ -179,57 +208,71 @@ testRemove(){
         auto actual = vaultFixture(actualInitilizerKwargs);
         auto expected = vaultFixture(expectedInitilizerKwargs);
 
-        testThrows<std::invalid_argument>(
+        results.push_back(testThrows<std::invalid_argument>(
             std::format("Test Vault.remove {}: missing name", i+1),
             &passvault::Vault::remove,
             "SUCCESS",
             "FAIL",
+            false,
             actual,
             "FOO"
-        );
-        testEquals(
+        ));
+        results.push_back(testEquals(
             std::format("Test Vault.remove {}: unchanged after missing name", i+1),
             actual.secrets(),
             expected.secrets(),
             "SUCCESS",
-            "FAIL"
-        );
+            "FAIL",
+            false
+        ));
     }
+    return std::ranges::all_of(results, [](bool passed) { return passed; });
 }
 
-void
+/**
+ * @brief Checks stored values and std::out_of_range for a missing key in each fixture.
+ * @return True if all retrieval and exception checks pass.
+ */
+bool
 testGet(){
+    std::vector<bool> results;
     for (std::size_t i = 0; i < fixtures::vaultFixtures.size(); ++i) {
         auto actualInitilizerKwargs = fixtures::vaultFixtures[i];
         auto actual = vaultFixture(actualInitilizerKwargs);
 
         for (const auto& [name, secret] : actualInitilizerKwargs.contents) {
-            testEquals(
+            results.push_back(testEquals(
                 std::format("Test Vault.get {}: {}", i+1, name),
                 actual.get(name),
                 secret.value,
                 "SUCCESS",
-                "FAIL"
-            );
+                "FAIL",
+                false
+            ));
         }
 
-        testThrows<std::out_of_range>(
+        results.push_back(testThrows<std::out_of_range>(
             std::format("Test Vault.get {}: missing name", i+1),
             &passvault::Vault::get,
             "SUCCESS",
             "FAIL",
+            false,
             actual,
             "FOO"
-        );
+        ));
     }
+    return std::ranges::all_of(results, [](bool passed) { return passed; });
 }
 
-void
+bool
 testAll(){
-    testAdd();
-    testExists();
-    testGet();
-    testRemove();
+    const std::vector<bool> results{
+        testAdd(),
+        testExists(),
+        testGet(),
+        testRemove()
+    };
+    return std::ranges::all_of(results, [](bool passed) { return passed; });
 }
 } // namespace vaultTests
 /*----------------------------------------------------*/

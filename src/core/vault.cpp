@@ -1,3 +1,7 @@
+/**
+ * @file vault.cpp
+ * @brief Implementation of the in-memory vault declared in vault.hpp.
+ */
 // std library includes
 #include <string>
 #include <stdexcept>
