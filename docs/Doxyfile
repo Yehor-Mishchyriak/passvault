@@ -1,4 +1,4 @@
-# Run from the project root: doxygen Doxyfile
+# Run from the project root: doxygen docs/Doxyfile
 PROJECT_NAME           = "Passvault"
 INPUT                  = src tests
 RECURSIVE              = YES
